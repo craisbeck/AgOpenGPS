@@ -33,22 +33,18 @@
 //Connect ground only for cytron, Connect Ground and +5v for IBT2
 
 //Dir1 for Cytron Dir, Both L and R enable for IBT2
-#define DIR1_RL_ENABLE  4  //PD4
+#define DIR1_RL_ENABLE  6
 
 //PWM1 for Cytron PWM, Left PWM for IBT2
-#define PWM1_LPWM  3  //PD3
+#define PWM1_LPWM  4
 
 //Not Connected for Cytron, Right PWM for IBT2
-#define PWM2_RPWM  9 //D9
+#define PWM2_RPWM  5
 
 //--------------------------- Switch Input Pins ------------------------
-#define STEERSW_PIN 6 //PD6
-#define WORKSW_PIN 7  //PD7
-#define REMOTE_PIN 8  //PB0
-
-//ethercard 10,11,12,13
-// Arduino Nano = 10 depending how CS of Ethernet Controller ENC28J60 is Connected
-#define CS_Pin 10
+#define STEERSW_PIN 24
+#define WORKSW_PIN 26
+#define REMOTE_PIN 29
 
 //Define sensor pin for current or pressure sensor
 #define ANALOG_SENSOR_PIN A0
