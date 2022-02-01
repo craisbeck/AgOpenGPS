@@ -1,6 +1,7 @@
   /*
-  * USB Autosteer code For AgOpenGPS
-  * 4 Feb 2021, Brian Tischler
+  * USB Autosteer code for Teensy 4.1 
+  * For AgOpenGPS
+  * 01 Feb 2022
   * Like all Arduino code - copied from somewhere else :)
   * So don't claim it as your own
   */
@@ -32,18 +33,18 @@
   //Connect ground only for cytron, Connect Ground and +5v for IBT2
     
   //Dir1 for Cytron Dir, Both L and R enable for IBT2
-  #define DIR1_RL_ENABLE  4  //PD4
-
+  #define DIR1_RL_ENABLE  6
+  
   //PWM1 for Cytron PWM, Left PWM for IBT2
-  #define PWM1_LPWM  3  //PD3
-
+  #define PWM1_LPWM  4
+  
   //Not Connected for Cytron, Right PWM for IBT2
-  #define PWM2_RPWM  9 //D9
+  #define PWM2_RPWM  5
 
   //--------------------------- Switch Input Pins ------------------------
-  #define STEERSW_PIN 6 //PD6
-  #define WORKSW_PIN 7  //PD7
-  #define REMOTE_PIN 8  //PB0
+  #define STEERSW_PIN 32
+  #define WORKSW_PIN 34
+  #define REMOTE_PIN 37
 
   //Define sensor pin for current or pressure sensor
   #define ANALOG_SENSOR_PIN A0
@@ -74,8 +75,8 @@
   uint8_t helloAgIO[] = {0x80,0x81, 0x7f, 0xC7, 1, 0, 0x47 };
   uint8_t helloCounter=0;
 
-  //fromAutoSteerData FD 253 - ActualSteerAngle*100 -5,6, Heading-7,8, 
-        //Roll-9,10, SwitchByte-11, pwmDisplay-12, CRC 13
+  //fromAutoSteerData FD 253 - ActualSteerAngle*100 -5,6, Heading-7,8,
+  //Roll-9,10, SwitchByte-11, pwmDisplay-12, CRC 13
   uint8_t AOG[] = {0x80,0x81, 0x7f, 0xFD, 8, 0, 0, 0, 0, 0,0,0,0, 0xCC };
   int16_t AOGSize = sizeof(AOG);
 
@@ -194,13 +195,13 @@
     if (steerConfig.CytronDriver) pinMode(PWM2_RPWM, OUTPUT); 
     
     //set up communication
-    Wire.begin();
+    Wire1.begin();
     Serial.begin(38400);
   
     //test if CMPS working
     uint8_t error;
-    Wire.beginTransmission(CMPS14_ADDRESS);
-    error = Wire.endTransmission();
+    Wire1.beginTransmission(CMPS14_ADDRESS);
+    error = Wire1.endTransmission();
 
     if (error == 0)
     {
@@ -226,8 +227,8 @@
         
         Serial.print("\r\nChecking for BNO08X on ");
         Serial.println(bno08xAddress, HEX);
-        Wire.beginTransmission(bno08xAddress);
-        error = Wire.endTransmission();
+        Wire1.beginTransmission(bno08xAddress);
+        error = Wire1.endTransmission();
     
         if (error == 0)
         {
@@ -237,10 +238,8 @@
           Serial.println("BNO08X Ok.");
           
           // Initialize BNO080 lib        
-          if (bno08x.begin(bno08xAddress))
+          if (bno08x.begin(bno08xAddress, Wire1))
           {
-            Wire.setClock(400000); //Increase I2C data rate to 400kHz
-  
             // Use gameRotationVector
             bno08x.enableGameRotationVector(REPORT_INTERVAL); //Send data update every REPORT_INTERVAL in ms for BNO085
   
@@ -430,15 +429,11 @@
               
         steeringPosition = (steeringPosition >> 1); //bit shift by 2  0 to 13610 is 0 to 5v
       }
-
-      // steeringPosition
-      //Serial.print("ADC value: ");
-      //Serial.println(steeringPosition);
       
       //DETERMINE ACTUAL STEERING POSITION
             
-        //convert position to steer angle. 32 counts per degree of steer pot position in my case
-        //  ***** make sure that negative steer angle makes a left turn and positive value is a right turn *****
+      //convert position to steer angle. 32 counts per degree of steer pot position in my case
+      //  ***** make sure that negative steer angle makes a left turn and positive value is a right turn *****
       if (steerConfig.InvertWAS)
       {
           steeringPosition = (steeringPosition - 6805  - steerSettings.wasOffset);   // 1/2 of full scale
@@ -455,7 +450,7 @@
       
       if (watchdogTimer < WATCHDOG_THRESHOLD)
       { 
-       //Enable H Bridge for IBT2, hyd aux, etc for cytron
+        //Enable H Bridge for IBT2, hyd aux, etc for cytron
         if (steerConfig.CytronDriver) 
         {
           if (steerConfig.IsRelayActiveHigh) 
@@ -583,27 +578,27 @@
         
         if (useCMPS)
         {
-          Wire.beginTransmission(CMPS14_ADDRESS);  
-          Wire.write(0x02);                     
-          Wire.endTransmission();
+          Wire1.beginTransmission(CMPS14_ADDRESS);  
+          Wire1.write(0x02);                     
+          Wire1.endTransmission();
           
-          Wire.requestFrom(CMPS14_ADDRESS, 2); 
-          while(Wire.available() < 2);       
+          Wire1.requestFrom(CMPS14_ADDRESS, 2); 
+          while(Wire1.available() < 2);       
         
           //the heading x10
-          AOG[8] = Wire.read();
-          AOG[7] = Wire.read();
+          AOG[8] = Wire1.read();
+          AOG[7] = Wire1.read();
          
-          Wire.beginTransmission(CMPS14_ADDRESS);  
-          Wire.write(0x1C);                    
-          Wire.endTransmission();
+          Wire1.beginTransmission(CMPS14_ADDRESS);  
+          Wire1.write(0x1C);                    
+          Wire1.endTransmission();
          
-          Wire.requestFrom(CMPS14_ADDRESS, 2);  
-          while(Wire.available() < 2);        
+          Wire1.requestFrom(CMPS14_ADDRESS, 2);  
+          while(Wire1.available() < 2);        
         
           //the roll x10
-          AOG[10] = Wire.read();
-          AOG[9] = Wire.read();            
+          AOG[10] = Wire1.read();
+          AOG[9] = Wire1.read();            
         }
         else if(useBNO08x)
         {
