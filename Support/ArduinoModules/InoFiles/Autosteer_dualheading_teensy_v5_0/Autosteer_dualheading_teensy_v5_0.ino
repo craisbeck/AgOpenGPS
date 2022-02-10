@@ -150,7 +150,7 @@ double GGAZeitNummerbevor, GGAZeitNummer;
 double GGA_hDops, GGAage, GGA_seahighs;
 
 unsigned long prev_PWM_Millis = 0;
-byte velocityPWM_Pin = 12;      // Velocity (MPH speed) PWM pin
+byte velocityPWM_Pin = 36;      // Velocity (MPH speed) PWM pin
 int velocityPWM_Multiplier = 10; // PWM (MPH * multiplier)
 
 // PAOGI erstellen

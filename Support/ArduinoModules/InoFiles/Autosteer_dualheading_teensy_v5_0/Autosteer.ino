@@ -33,13 +33,13 @@
 //Connect ground only for cytron, Connect Ground and +5v for IBT2
 
 //Dir1 for Cytron Dir, Both L and R enable for IBT2
-#define DIR1_RL_ENABLE  6
+#define DIR1_RL_ENABLE  4
 
 //PWM1 for Cytron PWM, Left PWM for IBT2
-#define PWM1_LPWM  4
+#define PWM1_LPWM  2
 
 //Not Connected for Cytron, Right PWM for IBT2
-#define PWM2_RPWM  5
+#define PWM2_RPWM  3
 
 //--------------------------- Switch Input Pins ------------------------
 #define STEERSW_PIN 32
@@ -572,11 +572,11 @@ void ReceiveUdp()
 {
   uint16_t len = Eth_udpAutoSteer.parsePacket();
 
-  if (len > 0)
-  {
-    Serial.print("ReceiveUdp: ");
-    Serial.println(len);
-  }
+  //if (len > 0)
+  //{
+  //  Serial.print("ReceiveUdp: ");
+  //  Serial.println(len);
+  //}
 
   if (len > 13)
   {
@@ -591,7 +591,10 @@ void ReceiveUdp()
         guidanceStatus = autoSteerUdpData[7];
 
         //Bit 8,9    set point steer angle * 100 is sent
-        steerAngleSetPoint = ((float)(autoSteerUdpData[8] | autoSteerUdpData[9] << 8)) * 0.01; //high low bytes
+        steerAngleSetPoint = ((float)(autoSteerUdpData[8] | ((int8_t)autoSteerUdpData[9]) << 8))*0.01; //high low bytes
+
+        //Serial.print("steerAngleSetPoint: ");
+        //Serial.println(steerAngleSetPoint);
 
         //Serial.println(gpsSpeed);
 
